@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Debit & Credit Practice</title>
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--ink:#1f2933;--mute:#5f6b76;--line:#d9d6cc;--acc:#1f6f5c;--accbg:#e1f0ea;--ok:#1d7a3e;--okbg:#e3f4e8;--bad:#b3261e;--badbg:#fbe7e5;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15191c;--card:#1f2428;--ink:#eceff1;--mute:#a3adb5;--line:#364047;--acc:#5fc2a6;--accbg:#1b3a32;--ok:#6fd38f;--okbg:#17321f;--bad:#ff8a80;--badbg:#3a1d1b;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:1.4rem;margin:8px 0 4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+.mute{color:var(--mute);font-size:.92rem}
+table{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:8px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left}
+th{background:var(--accbg)}
+.levels{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--acc);background:var(--acc);color:#fff;padding:10px 16px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button{color:#10201b}}
+button.alt{background:transparent;color:var(--acc)}
+button:disabled{opacity:.5;cursor:default}
+label{display:block;font-weight:600;margin:12px 0 4px}
+select{width:100%;font:inherit;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:8px 0}
+.bar i{display:block;height:100%;background:var(--acc)}
+.fb{border-radius:10px;padding:12px;margin-top:14px}
+.fb.ok{background:var(--okbg);border:1px solid var(--ok)}
+.fb.no{background:var(--badbg);border:1px solid var(--bad)}
+.fb b.t{display:block;margin-bottom:4px}
+.scn{font-size:1.1rem;font-weight:600}
+.big{font-size:2rem;font-weight:700}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+var T={A:"Asset",L:"Liability",E:"Equity",I:"Income",X:"Expense"};
+var ACC=[
+["Cash","A"],["Bank","A"],["Accounts Receivable","A"],["Inventory","A"],["Equipment","A"],["Prepaid Expenses","A"],["Accumulated Depreciation","A"],["Allowance for Doubtful Debts","A"],
+["Accounts Payable","L"],["Loan Payable","L"],["Accrued Expenses","L"],["Unearned Revenue","L"],["VAT Payable","L"],
+["Owner’s Capital","E"],["Drawings","E"],
+["Sales Revenue","I"],
+["Cost of Sales","X"],["Rent Expense","X"],["Wages Expense","X"],["Interest Expense","X"],["Insurance Expense","X"],["Depreciation Expense","X"],["Bad Debt Expense","X"],["Sales Returns","X"]
+];
+var TYPE={};ACC.forEach(function(a){TYPE[a[0]]=a[1]});
+var GRP={A:"Assets",L:"Liabilities",E:"Equity",I:"Income",X:"Expenses"};
+var LV=[
+{name:"Beginner",hint:true,q:[
+["The owner invests £10,000 cash into the business.","Cash","Owner’s Capital","Cash (asset) rises, so debit it. The owner’s stake (equity) rises, so credit it."],
+["The business pays £800 rent in cash.","Rent Expense","Cash","Rent is an expense, and expenses rise with a debit. Cash (asset) falls, which is a credit."],
+["The business buys equipment for cash.","Equipment","Cash","One asset swaps for another. Equipment rises (debit), cash falls (credit)."],
+["The business sells services for £500 cash.","Cash","Sales Revenue","Cash rises (debit). Income rises with a credit."],
+["The business buys inventory on credit from a supplier.","Inventory","Accounts Payable","Inventory (asset) rises, so debit. You now owe the supplier, a liability that rises with a credit."],
+["The business pays staff wages in cash.","Wages Expense","Cash","Wages are an expense (debit). Cash falls (credit)."],
+["The business sells goods on credit to a customer.","Accounts Receivable","Sales Revenue","The customer owes you, so the receivable (asset) rises with a debit. Income is credited."],
+["A customer pays an invoice they owed earlier.","Cash","Accounts Receivable","Cash rises (debit). The receivable shrinks (credit). The sale was already recorded earlier."]
+]},
+{name:"Medium",hint:false,q:[
+["The business pays a supplier £2,000 it owed, from the bank.","Accounts Payable","Bank","Paying off a liability reduces it, and liabilities reduce with a debit. The bank (asset) falls, a credit."],
+["The business receives a £20,000 bank loan.","Bank","Loan Payable","Bank (asset) rises (debit). A new liability rises (credit)."],
+["The owner takes £300 cash for personal use.","Drawings","Cash","Drawings reduce equity, so they are debited. Cash falls (credit)."],
+["The business pays £1,200 for 12 months’ insurance in advance, from the bank.","Prepaid Expenses","Bank","Not yet used up, so it is an asset (prepayment), not an expense. Debit prepaid, credit bank."],
+["Record this year’s depreciation on equipment.","Depreciation Expense","Accumulated Depreciation","The expense is debited. Accumulated depreciation is a contra-asset that builds up with a credit, so the equipment’s cost stays visible."],
+["A customer pays a £400 deposit into the bank before the goods are delivered.","Bank","Unearned Revenue","Cash arrives (debit), but you have not earned it yet. You owe delivery, which is a liability (credit)."],
+["At month-end, £900 of wages are earned by staff but not yet paid.","Wages Expense","Accrued Expenses","The cost belongs to this month (debit expense). The unpaid amount is a liability (credit)."],
+["The business repays £1,000 of a bank loan from the bank.","Loan Payable","Bank","A liability falls with a debit. The bank (asset) falls with a credit."]
+]},
+{name:"Difficult",hint:false,q:[
+["The business pays £1,500 of VAT owed to HMRC, from the bank.","VAT Payable","Bank","VAT collected is a liability. Paying it reduces the liability (debit) and the bank (credit)."],
+["A customer returns faulty goods that were sold on credit.","Sales Returns","Accounts Receivable","Returns reduce sales, so record them as sales returns (debit). The customer owes less, so the receivable falls (credit)."],
+["A customer’s £600 debt is judged irrecoverable and written off directly.","Bad Debt Expense","Accounts Receivable","The loss is an expense (debit). The receivable no longer exists, so credit it."],
+["The business sets up an allowance for estimated doubtful debts.","Bad Debt Expense","Allowance for Doubtful Debts","The estimated loss is an expense (debit). The allowance is a contra-asset against receivables (credit)."],
+["At month-end, £150 of loan interest has built up but is unpaid.","Interest Expense","Accrued Expenses","The cost belongs to this month (debit). You owe it, so a liability is credited."],
+["One month of the prepaid insurance has now been used up.","Insurance Expense","Prepaid Expenses","The used portion becomes an expense (debit). The prepayment asset shrinks (credit)."],
+["The business delivers goods for which a deposit was received earlier.","Unearned Revenue","Sales Revenue","The obligation is now met, so the liability falls (debit) and income is recognised (credit)."],
+["Goods that cost £700 are sold (perpetual inventory). Record the cost side.","Cost of Sales","Inventory","The cost of what you gave up is an expense (debit). Inventory (asset) falls (credit)."]
+]}
+];
+var S={lvl:null,i:0,score:0,done:false,res:[]};
+var app=document.getElementById("app");
+function opts(hint){
+  var h='<option value="">Choose an account…</option>';
+  Object.keys(GRP).forEach(function(k){
+    h+='<optgroup label="'+GRP[k]+'">';
+    ACC.filter(function(a){return a[1]===k}).forEach(function(a){
+      h+='<option value="'+a[0]+'">'+a[0]+(hint?" ("+T[k]+")":"")+'</option>';
+    });
+    h+='</optgroup>';
+  });
+  return h;
+}
+function home(){
+  S={lvl:null,i:0,score:0,done:false,res:[]};
+  var b=LV.map(function(l,i){return '<button onclick="start('+i+')">'+(i+1)+'. '+l.name+'</button>'}).join("");
+  app.innerHTML='<h1>Debit & Credit Practice</h1><p class="mute">Three levels, eight transactions each. You get feedback after every answer.</p>'+
+  '<div class="card"><b>The only idea you need</b><p>Assets = Liabilities + Equity. For each transaction, ask: which two accounts change, and what type is each?</p>'+
+  '<table><tr><th>Type</th><th>Debit</th><th>Credit</th></tr>'+
+  '<tr><td>Asset</td><td>Increases</td><td>Decreases</td></tr>'+
+  '<tr><td>Expense</td><td>Increases</td><td>Decreases</td></tr>'+
+  '<tr><td>Liability</td><td>Decreases</td><td>Increases</td></tr>'+
+  '<tr><td>Equity</td><td>Decreases</td><td>Increases</td></tr>'+
+  '<tr><td>Income</td><td>Decreases</td><td>Increases</td></tr></table>'+
+  '<p class="mute">Drawings sit in equity but reduce it, so they increase with a debit. Contra accounts do the opposite of the account they sit against.</p></div>'+
+  '<div class="levels">'+b+'</div>';
+}
+function start(i){S.lvl=i;S.i=0;S.score=0;S.done=false;S.res=[];show();}
+function show(){
+  var L=LV[S.lvl],q=L.q[S.i],n=L.q.length;
+  app.innerHTML='<p class="mute">'+L.name+' · Question '+(S.i+1)+' of '+n+' · Score '+S.score+'</p>'+
+  '<div class="bar"><i style="width:'+(S.i/n*100)+'%"></i></div>'+
+  '<div class="card"><div class="scn">'+q[0]+'</div>'+
+  '<label for="d">Debit</label><select id="d">'+opts(L.hint)+'</select>'+
+  '<label for="c">Credit</label><select id="c">'+opts(L.hint)+'</select>'+
+  '<div style="margin-top:14px"><button id="chk" onclick="check()">Check answer</button></div>'+
+  '<div id="fb"></div></div>'+
+  '<button class="alt" onclick="home()">Back to start</button>';
+}
+function check(){
+  var L=LV[S.lvl],q=L.q[S.i];
+  var d=document.getElementById("d").value,c=document.getElementById("c").value;
+  if(!d||!c){document.getElementById("fb").innerHTML='<div class="fb no">Pick an account for both debit and credit first.</div>';return;}
+  var okD=d===q[1],okC=c===q[2],ok=okD&&okC;
+  if(ok)S.score++;
+  var msg;
+  if(ok){msg='<b class="t">Correct</b>';}
+  else{
+    msg='<b class="t">Not quite</b>';
+    if(!okD)msg+='Debit: '+d+' is a'+("AEIX".indexOf(TYPE[d])>-1&&TYPE[d]!=="X"?"n ":" ")+T[TYPE[d]].toLowerCase()+'. The answer is <b>'+q[1]+'</b>.<br>';
+    if(!okC)msg+='Credit: '+c+' is a'+("AEIX".indexOf(TYPE[c])>-1&&TYPE[c]!=="X"?"n ":" ")+T[TYPE[c]].toLowerCase()+'. The answer is <b>'+q[2]+'</b>.<br>';
+    if(d===q[2]&&c===q[1])msg+='You had the sides swapped, so work out whether each account is rising or falling.<br>';
+  }
+  msg+='<br><span>'+q[3]+'</span>';
+  var last=S.i===L.q.length-1;
+  document.getElementById("fb").innerHTML='<div class="fb '+(ok?'ok':'no')+'">'+msg+'</div>'+
+  '<div style="margin-top:14px"><button onclick="next()">'+(last?'See results':'Next question')+'</button></div>';
+  document.getElementById("chk").disabled=true;
+  document.getElementById("d").disabled=true;document.getElementById("c").disabled=true;
+}
+function next(){
+  S.i++;
+  if(S.i>=LV[S.lvl].q.length)results();else show();
+}
+function results(){
+  var L=LV[S.lvl],n=L.q.length,p=S.score/n;
+  var m=p>=.875?"Strong. You are reading these transactions correctly.":p>=.6?"Good progress. Review the explanations you missed, then try again.":"This takes practice. Re-read the table at the start, then retry this level.";
+  var nxt=S.lvl<LV.length-1?'<button onclick="start('+(S.lvl+1)+')">Go to '+LV[S.lvl+1].name+'</button>':'';
+  app.innerHTML='<h1>'+L.name+' complete</h1><div class="card"><div class="big">'+S.score+' / '+n+'</div><p>'+m+'</p>'+
+  '<div class="levels">'+nxt+'<button class="alt" onclick="start('+S.lvl+')">Retry '+L.name+'</button><button class="alt" onclick="home()">Back to start</button></div></div>';
+}
+home();
+</script>
+</body>
+</html>
